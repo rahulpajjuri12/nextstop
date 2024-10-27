@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Route Map with Medium Yellow Outlined Text Labels for Bus Stops</title>
+    <title>Responsive Route Map with Medium Yellow Outlined Text Labels for Bus Stops</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <style>
         #map {
             height: 100%;
@@ -15,6 +16,19 @@
         /* CSS to apply a black outline to labels */
         .outlined-label {
             text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .outlined-label {
+                font-size: 14px; /* Smaller font for mobile */
+            }
+        }
+
+        @media (min-width: 601px) {
+            .outlined-label {
+                font-size: 18px; /* Larger font for tablets and desktops */
+            }
         }
     </style>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD-5khxlqX7n6571Q5ug0Ad43kkLTARVmo"></script>
@@ -122,7 +136,7 @@
                         text: stop.name,
                         color: "#FFD700", // Medium yellow text
                         fontWeight: "bold",
-                        fontSize: "18px",
+                        fontSize: "16px", // Adjust font size for better readability
                         fontFamily: "Arial",
                         className: "outlined-label" // CSS for outline effect
                     },
@@ -180,55 +194,22 @@
         function updateBusTracker() {
             if (busPositionIndex < busStops.length) {
                 busTrackerMarker.setPosition(busStops[busPositionIndex]);
+                busPositionIndex++;
 
-                // Check if the bus has reached the next stop
-                const nextStop = busStops[busPositionIndex + 1];
-                if (nextStop && isAtStop(busTrackerMarker.getPosition(), nextStop)) {
-                    alert(`Current Stop: ${busStops[busPositionIndex].name}`);
-                    busPositionIndex++;
-                    if (busPositionIndex < busStops.length) {
-                        alert(`Upcoming Stop: ${busStops[busPositionIndex].name}`);
-                    }
-                    speakAlert(`Current Stop: ${busStops[busPositionIndex - 1].name}. Upcoming Stop: ${busStops[busPositionIndex]?.name || "End of Route"}.`);
-                }
-
-                // Fade out passed route
-                fadeOutPassedRoute();
+                // Adjust visibility or fade out the bus marker after passing stops
+                setTimeout(() => {
+                    busTrackerMarker.setOpacity(0.5); // Example: reduce opacity after passing a stop
+                }, 5000); // Adjust timing as needed
+            } else {
+                busPositionIndex = 0; // Reset or stop the tracker as per requirement
             }
         }
 
-        // Function to check if the bus is at a specific stop
-        function isAtStop(busPosition, stop) {
-            const threshold = 0.0001; // Adjust for proximity
-            return (
-                Math.abs(busPosition.lat() - stop.lat) < threshold &&
-                Math.abs(busPosition.lng() - stop.lng) < threshold
-            );
-        }
-
-        // Function to fade out the passed route
-        function fadeOutPassedRoute() {
-            if (busPositionIndex > 0) {
-                const passedRoute = routePath.slice(0, busPositionIndex);
-                const polyline = new google.maps.Polyline({
-                    path: passedRoute,
-                    strokeColor: '#FF0000', // Change color to red for passed route
-                    strokeOpacity: 0.5, // Reduce opacity
-                    strokeWeight: 4,
-                    map: map
-                });
-            }
-        }
-
-        // Function to speak alerts
-        function speakAlert(message) {
-            const speech = new SpeechSynthesisUtterance(message);
-            speech.lang = "en-US";
-            window.speechSynthesis.speak(speech);
-        }
+        google.maps.event.addDomListener(window, "load", initMap);
     </script>
 </head>
-<body onload="initMap()">
+<body>
     <div id="map"></div>
 </body>
 </html>
+
